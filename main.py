@@ -519,12 +519,43 @@ class App(tk.Tk):
             self.log(self.lang.get("log_step2_crop"))
             self.update_progress(2, 4, self.lang.get("progress_step2"))
             step2_dir = os.path.join(video_specific_dir, "2_cropped_frames"); os.makedirs(step2_dir)
-            offset_str = f"{int(offset_x):+}{int(offset_y):+}"; crop_str = f"{crop_w}x{crop_h}{offset_str}"
             files = [f for f in os.listdir(current_path) if f.endswith(".png")]
             for idx, filename in enumerate(files, 1):
                 if self.stop_requested.is_set(): return
                 input_file = os.path.join(current_path, filename); output_file = os.path.join(step2_dir, filename)
-                subprocess.run(['magick', input_file, '-gravity', 'center', '-crop', crop_str, '+repage', output_file], check=True, **self.get_subprocess_args())
+                # 使用 PIL 进行裁剪，支持超出边界时用透明像素填充
+                with Image.open(input_file) as img:
+                    img_w, img_h = img.size
+                    # 计算裁剪框在原图中的位置
+                    left = (img_w - crop_w) // 2 + offset_x
+                    top = (img_h - crop_h) // 2 + offset_y
+                    right = left + crop_w
+                    bottom = top + crop_h
+                    
+                    # 创建一个透明背景的新图像
+                    if img.mode == 'RGBA':
+                        result = Image.new('RGBA', (crop_w, crop_h), (0, 0, 0, 0))
+                    else:
+                        result = Image.new('RGBA', (crop_w, crop_h), (0, 0, 0, 0))
+                        img = img.convert('RGBA')
+                    
+                    # 计算原图在结果图中的粘贴位置
+                    paste_left = max(0, -left)
+                    paste_top = max(0, -top)
+                    
+                    # 计算从原图中裁剪的区域
+                    crop_left = max(0, left)
+                    crop_top = max(0, top)
+                    crop_right = min(img_w, right)
+                    crop_bottom = min(img_h, bottom)
+                    
+                    # 如果裁剪区域有效，则裁剪并粘贴
+                    if crop_right > crop_left and crop_bottom > crop_top:
+                        cropped = img.crop((crop_left, crop_top, crop_right, crop_bottom))
+                        result.paste(cropped, (paste_left, paste_top))
+                    
+                    result.save(output_file, 'PNG')
+                
                 if idx % 10 == 0:
                     self.update_progress(2, 4, self.lang.get("progress_step2_detail").format(current=idx, total=len(files)))
             current_path = step2_dir
