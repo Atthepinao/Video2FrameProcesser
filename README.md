@@ -80,8 +80,8 @@ python main.py
 
 如果需要使用 Photoshop 抠图功能：
 
-1. 在 Photoshop 中创建一个名为 `RemoveBackground` 的动作
-2. 动作应该包含你的抠图步骤（例如：魔棒选择、删除背景等）
+1. 在 Photoshop 中创建一个名为 `移除背景` 的动作，放置在“默认动作”组中
+2. 动作应该包含你的抠图步骤（例如：魔棒选择、删除背景等。建议直接使用photoshop最新版本的“移除背景”这个行为）
 3. 在程序设置中配置 Photoshop 的安装路径
 
 ### 输出文件
@@ -170,7 +170,6 @@ pyinstaller --onefile --windowed --icon=icon.ico --add-data "run_action_template
 
 如有问题或建议，欢迎：
 - 提交 [Issue](../../issues)
-- 发起 [Discussion](../../discussions)
 
 ---
 
