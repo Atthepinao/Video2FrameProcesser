@@ -92,5 +92,9 @@
     "progress_step3_detail": "步骤 3/4: Photoshop处理中 ({seconds}秒)",
     "progress_step4": "步骤 4/4: 调整分辨率",
     "progress_step4_detail": "步骤 4/4: 调整分辨率中 ({current}/{total})",
-    "log_error": "错误: {error}"
+    "log_error": "错误: {error}",
+    "clean_temp_files_label": "处理完成后清理临时文件",
+    "log_cleaning_temp": "正在清理临时文件...",
+    "log_moved_final": "已将最终输出移动到: {path}",
+    "log_cleaned_temp": "临时文件已清理"
 }

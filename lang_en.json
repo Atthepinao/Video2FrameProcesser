@@ -92,5 +92,9 @@
     "progress_step3_detail": "Step 3/4: Photoshop processing ({seconds}s)",
     "progress_step4": "Step 4/4: Resize",
     "progress_step4_detail": "Step 4/4: Resizing ({current}/{total})",
-    "log_error": "Error: {error}"
+    "log_error": "Error: {error}",
+    "clean_temp_files_label": "Clean temporary files after processing",
+    "log_cleaning_temp": "Cleaning temporary files...",
+    "log_moved_final": "Final output moved to: {path}",
+    "log_cleaned_temp": "Temporary files cleaned"
 }

@@ -40,7 +40,8 @@ DEFAULT_SETTINGS = {
     "crop_h": "256",
     "final_w": "128",
     "final_h": "128",
-    "geometry": "1000x750"
+    "geometry": "1000x750",
+    "clean_temp_files": False
 }
 
 # --- Language and Settings Loaders ---
@@ -231,7 +232,7 @@ class App(tk.Tk):
         menubar.add_cascade(label=self.lang.get("menu_file"), menu=file_menu)
 
     def open_settings_window(self):
-        settings_window = tk.Toplevel(self); settings_window.title(self.lang.get("settings_title")); settings_window.geometry("600x300")
+        settings_window = tk.Toplevel(self); settings_window.title(self.lang.get("settings_title")); settings_window.geometry("600x340")
         
         lang_frame = ttk.Frame(settings_window); lang_frame.pack(fill="x", padx=10, pady=5)
         ttk.Label(lang_frame, text=self.lang.get("lang_label")).pack(side="left")
@@ -263,6 +264,11 @@ class App(tk.Tk):
         final_w_var = tk.StringVar(value=self.settings.get("final_w", "128")); final_h_var = tk.StringVar(value=self.settings.get("final_h", "128"))
         ttk.Label(res_frame, text="W:").pack(side="left", padx=(10, 0)); ttk.Entry(res_frame, textvariable=final_w_var, width=5).pack(side="left")
         ttk.Label(res_frame, text="H:").pack(side="left", padx=(10, 0)); ttk.Entry(res_frame, textvariable=final_h_var, width=5).pack(side="left")
+        
+        # 清理临时文件选项
+        clean_frame = ttk.Frame(settings_window); clean_frame.pack(fill="x", padx=10, pady=5)
+        clean_temp_var = tk.BooleanVar(value=self.settings.get("clean_temp_files", False))
+        ttk.Checkbutton(clean_frame, text=self.lang.get("clean_temp_files_label"), variable=clean_temp_var).pack(side="left")
 
         def save_and_close():
             current_lang = self.settings.get("language", "zh"); new_lang = lang_var.get()
@@ -272,6 +278,7 @@ class App(tk.Tk):
             self.settings["crop_h"] = crop_h_var.get()
             self.settings["final_w"] = final_w_var.get()
             self.settings["final_h"] = final_h_var.get()
+            self.settings["clean_temp_files"] = clean_temp_var.get()
             
             if current_lang != new_lang:
                 self.settings["language"] = new_lang
@@ -610,6 +617,37 @@ class App(tk.Tk):
             current_path = step4_dir
 
         self.log(self.lang.get("log_video_complete").format(name=os.path.basename(video_path), path=current_path))
+        
+        # 如果启用了清理临时文件选项
+        if self.settings.get("clean_temp_files", False):
+            self.log(self.lang.get("log_cleaning_temp"))
+            
+            # 将最终输出文件移动到视频文件夹根目录
+            final_output_root = video_specific_dir
+            if current_path != final_output_root:
+                # 移动所有最终输出文件到根目录
+                for filename in os.listdir(current_path):
+                    if filename.endswith(".png"):
+                        src = os.path.join(current_path, filename)
+                        dst = os.path.join(final_output_root, filename)
+                        shutil.move(src, dst)
+                
+                self.log(self.lang.get("log_moved_final").format(path=final_output_root))
+            
+            # 删除所有临时文件夹
+            temp_dirs = [
+                os.path.join(video_specific_dir, "1_reduced_frames"),
+                os.path.join(video_specific_dir, "1_all_frames"),
+                os.path.join(video_specific_dir, "2_cropped_frames"),
+                os.path.join(video_specific_dir, "3_transparent_temp"),
+                os.path.join(video_specific_dir, "4_final_output")
+            ]
+            
+            for temp_dir in temp_dirs:
+                if os.path.exists(temp_dir):
+                    shutil.rmtree(temp_dir)
+            
+            self.log(self.lang.get("log_cleaned_temp"))
 
 if __name__ == "__main__":
     app_settings = load_settings()
